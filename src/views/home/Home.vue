@@ -39,6 +39,8 @@
 
   import {getHomeMultidata, getHomeGoods} from "network/home";
 
+  import {debounce} from "common/utils";
+
   export default {
     name: "Home",
     components: {
@@ -72,6 +74,15 @@
       this.getHomeGoods('pop')
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
+
+
+    },
+    mounted() {
+      // 3.监听goodListItemImageLoad 图片加载完成
+      const refresh = debounce(this.$refs.scroll.refresh, 200)
+      this.$bus.$on('goodListItemImageLoad', () => {
+        refresh()
+      })
     },
     methods: {
       /**
@@ -96,9 +107,9 @@
       contentScroll(position) {
         this.isShowBackTop = (-position.y) > 1000
       },
-      loadMore(){
+      // 加载更多
+      loadMore() {
         this.getHomeGoods(this.currentType)
-        this.$refs.scroll.scroll.refresh()
       },
 
       /**
@@ -115,7 +126,7 @@
         getHomeGoods(type, page).then(res => {
           this.goods[type].list.push(...res.data.list)
           this.goods[type].page += 1
-
+          // 完成上拉加载更多
           this.$refs.scroll.finishPullUp()
         })
       }
